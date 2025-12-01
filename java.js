@@ -1,4 +1,7 @@
-// Hiện/ẩn ô tìm kiếm khi bấm kính lúp
+// ========== API Configuration ==========
+const API_BASE = 'http://localhost:5000';
+
+// ========== DOM Elements ==========
 const searchIcon = document.getElementById('searchIcon');
 const searchInput = document.getElementById('searchInput');
 if (searchIcon && searchInput) {
@@ -136,63 +139,52 @@ function renderCart() {
     }
 }
 
-// Thêm nút "Add to Cart" cho mỗi sản phẩm
-document.addEventListener('DOMContentLoaded', function () {
-    // Render initial cart count
-    renderCart();
-});
+// Hàm tìm kiếm gọi API
+async function searchProducts() {
+    const keyword = searchInput.value.trim();
 
-
-// Hàm tìm kiếm sản phẩm theo tên
-function searchProducts() {
-    const keyword = searchInput.value.trim().toLowerCase();
+    // Nếu ô tìm kiếm trống, không làm gì cả
     if (!keyword) return;
-    // Lấy tất cả sản phẩm từ các category, loại trùng theo ID
-    const productMap = new Map();
-    Object.values(productData).forEach(catProducts => {
-        catProducts.forEach(product => {
-            if (!productMap.has(product.id)) {
-                productMap.set(product.id, product);
-            }
-        });
-    });
-    const allProducts = Array.from(productMap.values());
-    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(keyword));
-    // Hiện product listing, ẩn trending
-    const productListing = document.getElementById('productListing');
-    const productGrid = document.getElementById('productGrid');
-    const trendingSection = document.querySelector('.trending-product');
-    trendingSection.style.display = 'none';
-    productListing.style.display = 'block';
-    document.getElementById('categoryTitle').textContent = `Kết quả cho "${keyword}"`;
-    if (filtered.length === 0) {
-        productGrid.innerHTML = '<div style="padding:24px;">Không tìm thấy sản phẩm phù hợp.</div>';
-    } else {
-        productGrid.innerHTML = filtered.map(product => `
-            <div class="row">
-                <img src="${product.image}" alt="${product.name}">
-                ${product.tag ? `<div class="product-text"><h5>${product.tag}</h5></div>` : ''}
-                <div class="quick-view">
-                    <i class='bx bx-show'></i>
+
+    try {
+        console.log("Đang tìm kiếm:", keyword);
+
+        // Gọi API có kèm tham số search
+        // Ví dụ: http://localhost:5000/api/products?search=shirt
+        const response = await fetch(`${API_BASE}/api/products?search=${keyword}`);
+        const data = await response.json();
+
+        // Xử lý giao diện (Ẩn trending, hiện kết quả)
+        const productListing = document.getElementById('productListing');
+        const productGrid = document.getElementById('productGrid');
+        const trendingSection = document.querySelector('.trending-product');
+
+        if (trendingSection) trendingSection.style.display = 'none';
+        if (productListing) productListing.style.display = 'block';
+
+        document.getElementById('categoryTitle').textContent = `Kết quả cho "${keyword}"`;
+
+        if (data.length === 0) {
+            productGrid.innerHTML = '<div style="padding:24px; width:100%; text-align:center">Không tìm thấy sản phẩm nào.</div>';
+        } else {
+            // Render kết quả ra màn hình
+            productGrid.innerHTML = data.map(product => `
+                <div class="row" onclick="openProductDetail({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">
+                    <img src="${product.image}" alt="${product.name}">
+                    <div class="product-name">
+                        <h4>${product.name}</h4>
+                    </div>
                 </div>
-                <div class="heart-icon">
-                    <i class='bx bx-heart'></i>
-                </div>
-                <div class="rating">
-                    ${generateStars(product.rating)}
-                </div>
-                <div class="color-options">
-                    <span>${product.colors} Color${product.colors > 1 ? 's' : ''}</span>
-                </div>
-                <div class="price">
-                    <h4>${product.name}</h4>
-                    <p>${product.price}</p>
-                    <button class="add-to-cart-btn" onclick="addToCart({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">Thêm vào giỏ</button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+        }
+
+        // Cuộn xuống phần kết quả
+        productListing.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error('Lỗi tìm kiếm:', error);
+        alert('Lỗi kết nối tới Server!');
     }
-    productListing.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Sticky header on scroll
@@ -266,59 +258,87 @@ function showTab(tab) {
     clearMessages();
 }
 
-// Handle user registration
-function handleRegister(e) {
+// --- XỬ LÝ ĐĂNG KÝ (GỌI API) ---
+async function handleRegister(e) {
     e.preventDefault();
+
+    // Lấy dữ liệu từ form
     const username = document.getElementById('regUsername').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+    // Kiểm tra cơ bản
     if (password !== confirmPassword) {
-        showMessage('messageContainer', 'Passwords do not match!', 'error');
+        showMessage('messageContainer', 'Mật khẩu xác nhận không khớp!', 'error');
         return;
     }
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-    if (users.some(u => u.username === username)) {
-        showMessage('messageContainer', 'Username already exists!', 'error');
-        return;
+
+    try {
+        // Gọi API sang Python
+        const response = await fetch(`${API_BASE}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showMessage('messageContainer', 'Đăng ký thành công! Đang chuyển hướng...', 'success');
+            // Chuyển sang tab đăng nhập sau 1.5 giây
+            setTimeout(() => {
+                showLogin();
+                document.getElementById('loginUsername').value = email; // Điền sẵn email
+            }, 1500);
+        } else {
+            showMessage('messageContainer', data.message || 'Lỗi đăng ký', 'error');
+        }
+
+    } catch (error) {
+        console.error(error);
+        showMessage('messageContainer', 'Không thể kết nối tới server!', 'error');
     }
-    const newUser = {
-        username: username,
-        email: email,
-        password: password,
-        createdAt: new Date().toISOString()
-    };
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    showMessage('messageContainer', 'Account created successfully! Redirecting...', 'success');
-    setTimeout(() => {
-        showLogin();
-        document.getElementById('loginUsername').value = username;
-        checkLoginForm();
-    }, 1500);
 }
 
-// Handle user login
-function handleLogin(e) {
+// --- XỬ LÝ ĐĂNG NHẬP (GỌI API) ---
+async function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('loginUsername').value.trim();
+
+    // Trong form HTML của bạn: loginUsername chính là nơi nhập Email
+    const email = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-        localStorage.setItem('currentUser', JSON.stringify({
-            username: user.username,
-            email: user.email
-        }));
-        showMessage('messageContainer', 'Login successful! Welcome back.', 'success');
-        setTimeout(() => {
-            updateUIForLoggedInUser(user);
-            closeModal();
-        }, 1000);
-    } else {
-        showMessage('messageContainer', 'Invalid username or password!', 'error');
+
+    try {
+        // Gọi API sang Python
+        const response = await fetch(`${API_BASE}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Lưu thông tin user vào localStorage để trình duyệt nhớ là đã đăng nhập
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+
+            showMessage('messageContainer', 'Đăng nhập thành công! Xin chào ' + data.user.username, 'success');
+
+            setTimeout(() => {
+                closeModal(); // Đóng bảng đăng nhập
+                location.reload(); // Load lại trang để cập nhật icon User
+            }, 1000);
+        } else {
+            showMessage('messageContainer', data.message, 'error');
+        }
+
+    } catch (error) {
+        console.error(error);
+        showMessage('messageContainer', 'Lỗi kết nối server!', 'error');
     }
 }
+
 
 // Handle user logout
 function handleLogout() {
@@ -498,267 +518,118 @@ function checkRegisterForm() {
     }
 }
 
-// ========== SAMPLE PRODUCT DATA ==========
-const productData = {
-    new: [
-        {
-            id: 2,
-            name: "Formal Men Lowers",
-            price: "$99 - $129",
-            image: "image/2.jpg",
-            tag: "New",
-            rating: 5,
-            colors: 2
-        },
-        {
-            id: 9,
-            name: "Casual Cotton Shirt",
-            price: "$79 - $99",
-            image: "image/9.jpg",
-            tag: "New",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 12,
-            name: "Summer Sundress",
-            price: "$69 - $89",
-            image: "image/12.jpg",
-            tag: "New",
-            rating: 4.5,
-            colors: 2
-        }
-    ],
-    men: [
-        {
-            id: 9,
-            name: "Casual Cotton Shirt",
-            price: "$79 - $99",
-            image: "image/9.jpg",
-            tag: "New",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 10,
-            name: "Elegant Evening Gown",
-            price: "$149 - $189",
-            image: "image/10.jpg",
-            tag: "Hot",
-            rating: 5,
-            colors: 3
-        },
-        {
-            id: 11,
-            name: "Denim Jacket",
-            price: "$89 - $119",
-            image: "image/11.jpg",
-            tag: "Sale",
-            rating: 4.5,
-            colors: 1
-        },
-        {
-            id: 12,
-            name: "Summer Sundress",
-            price: "$69 - $89",
-            image: "image/12.jpg",
-            tag: "New",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 13,
-            name: "Classic Blazer",
-            price: "$119 - $149",
-            image: "image/13.jpg",
-            tag: "Hot",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 14,
-            name: "Vintage Sweater",
-            price: "$79 - $109",
-            image: "image/14.jpg",
-            tag: "Sale",
-            rating: 4.5,
-            colors: 1
-        },
-        {
-            id: 15,
-            name: "Athletic Leggings",
-            price: "$59 - $79",
-            image: "image/15.jpg",
-            tag: "New",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 16,
-            name: "Wool Overcoat",
-            price: "$179 - $219",
-            image: "image/16.jpg",
-            tag: "Hot",
-            rating: 5,
-            colors: 1
-        }
-    ],
-    women: [
-        {
-            id: 1,
-            name: "Half Running Set",
-            price: "$99 - $129",
-            image: "image/1.jpg",
-            tag: "Sale",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 2,
-            name: "Formal Men Lowers",
-            price: "$99 - $129",
-            image: "image/2.jpg",
-            tag: "New",
-            rating: 5,
-            colors: 2
-        },
-        {
-            id: 3,
-            name: "Half Running Suit",
-            price: "$99 - $129",
-            image: "image/3.jpg",
-            tag: "Sale",
-            rating: 4.5,
-            colors: 1
-        },
-        {
-            id: 4,
-            name: "Half Fancy Lady Dress",
-            price: "$99 - $129",
-            image: "image/4.jpg",
-            tag: "Hot",
-            rating: 4.5,
-            colors: 1
-        },
-        {
-            id: 5,
-            name: "Flix Flox Jeans",
-            price: "$99 - $129",
-            image: "image/5.jpg",
-            tag: "Sale",
-            rating: 4.5,
-            colors: 1
-        },
-        {
-            id: 6,
-            name: "Fancy Salwar Suits",
-            price: "$99 - $129",
-            image: "image/6.jpg",
-            tag: "Hot",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 7,
-            name: "Printed Straight Kurta",
-            price: "$99 - $129",
-            image: "image/7.jpg",
-            tag: "Sale",
-            rating: 4.5,
-            colors: 2
-        },
-        {
-            id: 8,
-            name: "Collot Full Dress",
-            price: "$99 - $129",
-            image: "image/8.jpg",
-            tag: "Sale",
-            rating: 5,
-            colors: 1
-        }
-    ]
-};
+// Biến toàn cục để lưu trữ sản phẩm tải từ database
+let allProductsFromDB = [];
 
-// ========== SHOW PRODUCTS BY CATEGORY ==========
+// Hàm tải dữ liệu từ Python server khi trang web vừa mở
+async function fetchProducts() {
+    try {
+        const response = await fetch(`${API_BASE}/api/products`);
+        const data = await response.json();
+
+        if (data.error) {
+            console.error(data.error);
+            allProductsFromDB = fallbackProducts;
+        } else {
+            allProductsFromDB = data;
+        }
+    } catch (error) {
+        console.error("Lỗi kết nối tới Server Python, sử dụng dữ liệu mặc định:", error);
+        allProductsFromDB = fallbackProducts;
+    }
+
+    // Hiển thị sản phẩm trending
+    displayTrendingProducts();
+}
+
+// Hàm hiển thị 16 sản phẩm trong trending section
+function displayTrendingProducts() {
+    const trendingProducts = document.querySelector('.trending-product .products');
+    if (!trendingProducts) return;
+
+    trendingProducts.innerHTML = fallbackProducts.map(product => `
+        <div class="row"
+            onclick="openProductDetail({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">
+            <img src="${product.image}" alt="${product.name}">
+            <div class="product-name">
+                <h4>${product.name}</h4>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Hàm fetchProducts ĐÃ SỬA GỌN
+async function fetchProducts() {
+    try {
+        const response = await fetch(`${API_BASE}/api/products`);
+        const data = await response.json();
+
+        if (data.error) {
+            console.error("Lỗi từ server:", data.error);
+            return;
+        }
+
+        // Gán dữ liệu thật
+        allProductsFromDB = data;
+
+        // Hiển thị ra màn hình
+        displayTrendingProducts();
+
+    } catch (error) {
+        console.error("Lỗi kết nối:", error);
+        // Báo lỗi lên giao diện người dùng thay vì hiện sản phẩm giả
+        const container = document.querySelector('.trending-product .products');
+        if (container) container.innerHTML = '<p style="text-align:center">Không thể tải sản phẩm. Vui lòng kiểm tra Server.</p>';
+    }
+}
+
+
 function showProducts(category) {
     const productListing = document.getElementById('productListing');
     const productGrid = document.getElementById('productGrid');
     const categoryTitle = document.getElementById('categoryTitle');
     const trendingSection = document.querySelector('.trending-product');
 
-    // Ẩn trending products, hiện product listing
-    trendingSection.style.display = 'none';
-    productListing.style.display = 'block';
+    // Ẩn trending, hiện listing
+    if (trendingSection) trendingSection.style.display = 'none';
+    if (productListing) productListing.style.display = 'block';
 
-    // Scroll to section
-    productListing.scrollIntoView({ behavior: 'smooth' });
-
-    // Update title
+    // Cập nhật tiêu đề
     const titles = {
         'new': 'NEW Collection',
-        'men': 'Men\'s Products',
-        'women': 'Women\'s Products',
+        'men': "Men's Products",
+        'women': "Women's Products",
         'all': 'All Products'
     };
-    categoryTitle.textContent = titles[category] || 'Products';
-
-    // Get products
     let products = [];
     if (category === 'all') {
-        // Combine all products and remove duplicates by id - sử dụng Map để đảm bảo không trùng
-        const productMap = new Map();
-        // Lấy từ women (8 products)
-        if (productData.women) {
-            productData.women.forEach(product => {
-                productMap.set(product.id, product);
-            });
-        }
-        // Lấy từ men (8 products) - sẽ ghi đè nếu trùng ID
-        if (productData.men) {
-            productData.men.forEach(product => {
-                if (!productMap.has(product.id)) {
-                    productMap.set(product.id, product);
-                }
-            });
-        }
-        // Lấy từ new (3 products) - sẽ ghi đè nếu trùng ID
-        if (productData.new) {
-            productData.new.forEach(product => {
-                if (!productMap.has(product.id)) {
-                    productMap.set(product.id, product);
-                }
-            });
-        }
-        // Chuyển Map thành array và sắp xếp theo ID
-        products = Array.from(productMap.values()).sort((a, b) => a.id - b.id);
-    } else {
-        products = productData[category] || [];
+        // 1. Nếu chọn All -> Lấy hết
+        products = allProductsFromDB;
+    }
+    else if (category === 'new') {
+        // 2. Nếu chọn New -> Lọc theo cột TAG (chữ 'New')
+        products = allProductsFromDB.filter(p => p.tag === 'New');
+    }
+    else {
+        // 3. Nếu chọn Men hoặc Women -> Lọc theo cột CATEGORY
+        products = allProductsFromDB.filter(p => p.category === category);
     }
 
-    // Render products
-    productGrid.innerHTML = products.map(product => `
-        <div class="row">
-            <img src="${product.image}" alt="${product.name}">
-            ${product.tag ? `<div class="product-text"><h5>${product.tag}</h5></div>` : ''}
-            <div class="quick-view">
-                <i class='bx bx-show'></i>
-            </div>
-            <div class="heart-icon">
-                <i class='bx bx-heart'></i>
-            </div>
-            <div class="rating">
-                ${generateStars(product.rating)}
-            </div>
-            <div class="color-options">
-                <span>${product.colors} Color${product.colors > 1 ? 's' : ''}</span>
-            </div>
-            <div class="price">
-                <h4>${product.name}</h4>
-                <p>${product.price}</p>
-                <button class="add-to-cart-btn" onclick="addToCart({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">Thêm vào giỏ</button>
-            </div>
-        </div>
-    `).join('');
+    // Render HTML với layout mới: image + name only
+    if (productGrid) {
+        if (products.length === 0) {
+            productGrid.innerHTML = '<p style="padding:20px;">Đang cập nhật sản phẩm...</p>';
+        } else {
+            productGrid.innerHTML = products.map(product => `
+                <div class="row" onclick="openProductDetail({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">
+                    <img src="${product.image}" alt="${product.name}">
+                    <div class="product-name">
+                        <h4>${product.name}</h4>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
 }
 
 // ========== GENERATE STAR RATING ==========
