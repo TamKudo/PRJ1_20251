@@ -58,14 +58,17 @@ header {
 /* Search input style */
 #searchInput {
     display: none;
+    /* Mặc định ẩn */
     position: absolute;
-    top: 40px;
-    right: 60px;
+    top: 60px;
+    /* Cập nhật từ HTML vào đây */
+    right: 120px;
+    /* Cập nhật từ HTML vào đây */
     z-index: 2000;
-    padding: 12px 20px;
-    border-radius: 25px;
-    border: 2px solid #EE1C47;
-    min-width: 280px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    min-width: 180px;
     font-size: 16px;
     background: #fff;
     color: #222;

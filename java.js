@@ -518,47 +518,10 @@ function checkRegisterForm() {
     }
 }
 
-// Biến toàn cục để lưu trữ sản phẩm tải từ database
+// Biến lưu trữ sản phẩm từ Database
 let allProductsFromDB = [];
 
-// Hàm tải dữ liệu từ Python server khi trang web vừa mở
-async function fetchProducts() {
-    try {
-        const response = await fetch(`${API_BASE}/api/products`);
-        const data = await response.json();
-
-        if (data.error) {
-            console.error(data.error);
-            allProductsFromDB = fallbackProducts;
-        } else {
-            allProductsFromDB = data;
-        }
-    } catch (error) {
-        console.error("Lỗi kết nối tới Server Python, sử dụng dữ liệu mặc định:", error);
-        allProductsFromDB = fallbackProducts;
-    }
-
-    // Hiển thị sản phẩm trending
-    displayTrendingProducts();
-}
-
-// Hàm hiển thị 16 sản phẩm trong trending section
-function displayTrendingProducts() {
-    const trendingProducts = document.querySelector('.trending-product .products');
-    if (!trendingProducts) return;
-
-    trendingProducts.innerHTML = fallbackProducts.map(product => `
-        <div class="row"
-            onclick="openProductDetail({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">
-            <img src="${product.image}" alt="${product.name}">
-            <div class="product-name">
-                <h4>${product.name}</h4>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Hàm fetchProducts ĐÃ SỬA GỌN
+// 1. Hàm gọi API lấy sản phẩm (Chỉ giữ lại 1 hàm này thôi)
 async function fetchProducts() {
     try {
         const response = await fetch(`${API_BASE}/api/products`);
@@ -569,19 +532,44 @@ async function fetchProducts() {
             return;
         }
 
-        // Gán dữ liệu thật
+        // Lưu dữ liệu thật vào biến
         allProductsFromDB = data;
 
-        // Hiển thị ra màn hình
+        // Gọi hàm hiển thị ra màn hình
         displayTrendingProducts();
 
     } catch (error) {
         console.error("Lỗi kết nối:", error);
-        // Báo lỗi lên giao diện người dùng thay vì hiện sản phẩm giả
+        // Báo lỗi lên giao diện nếu không tải được
         const container = document.querySelector('.trending-product .products');
-        if (container) container.innerHTML = '<p style="text-align:center">Không thể tải sản phẩm. Vui lòng kiểm tra Server.</p>';
+        if (container) container.innerHTML = '<p style="text-align:center; width:100%">Không kết nối được Server!</p>';
     }
 }
+
+// 2. Hàm hiển thị sản phẩm ra trang chủ (Trending Section)
+function displayTrendingProducts() {
+    const container = document.querySelector('.trending-product .products');
+    if (!container) return;
+
+    // Lấy 8 sản phẩm đầu tiên để hiển thị (bạn có thể đổi số 8 thành 16 nếu muốn)
+    const productsToShow = allProductsFromDB.slice(0, 8);
+
+    container.innerHTML = productsToShow.map(product => `
+        <div class="row" onclick="openProductDetail({id:${product.id}, name:'${product.name}', price:'${product.price}', image:'${product.image}', tag:'${product.tag}', rating:${product.rating}, colors:${product.colors}})">
+            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300'">
+            ${product.tag ? `<div class="product-text"><h5>${product.tag}</h5></div>` : ''}
+            <div class="heart-icon"><i class='bx bx-heart'></i></div>
+            <div class="rating">${generateStars(product.rating)}</div>
+            <div class="price">
+                <h4>${product.name}</h4>
+                <p>${product.price}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Gọi hàm ngay khi web chạy
+fetchProducts();
 
 
 function showProducts(category) {
