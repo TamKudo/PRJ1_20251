@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini web clothing</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Miniver&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+</head>
+
+<body>
+    <header>
+        <a href="#" class="logo"><img src="image/logo.png" alt=""></a>
+
+        <ul class="navmenu">
+            <li><a href="#">Home</a></li>
+            <li class="dropdown">
+                <a href="#trending" class="dropbtn">Products <i class='bx bx-chevron-down'></i></a>
+                <div class="dropdown-content">
+                    <a href="#" onclick="showProducts('all')">Shop All</a>
+                    <a href="#" onclick="showProducts('men')">Men</a>
+                    <a href="#" onclick="showProducts('women')">Women</a>
+                    <a href="#" onclick="showProducts('new')">NEW</a>
+                </div>
+            </li>
+            <li><a href="#feedback">New Updates</a></li>
+            <li><a href="#reviews">Feedback</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <div class="nav-icon">
+            <a href="#" id="searchIcon"><i class='bx bx-search'></i></a>
+            <input type="text" id="searchInput" placeholder="Tìm sản phẩm..."
+                style="display:none; position:absolute; top:60px; right:120px; z-index:2000; padding:6px 12px; border-radius:4px; border:1px solid #ccc; min-width:180px;"
+                onkeydown="if(event.key==='Enter'){searchProducts();}">
+            <a href="#" id="userIcon"><i class="bx bx-user"></i></a>
+            <a href="#" id="cartIcon"><i class='bx bx-cart'></i></a>
+            <div class="bx bx-menu" id="menu-icon"></div>
+        </div>
+
+    </header>
+    <!-- Modal Đăng nhập/Đăng ký -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" id="modalContent">
+            <div class="modal-header">
+                <h2 id="modalTitle">Login</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Welcome Text -->
+                <div class="welcome-text">
+                    <h1 id="welcomeTitle">Welcome back!</h1>
+                    <p id="welcomeSubtitle">Please login to access your account</p>
+                </div>
+
+                <!-- Message Container -->
+                <div id="messageContainer"></div>
+
+                <!-- Form Đăng nhập -->
+                <div id="loginForm" class="form-container active">
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="loginUsername">Email</label>
+                            <input type="text" id="loginUsername" required placeholder="Enter your email"
+                                oninput="checkLoginForm()">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" required placeholder="Enter your password"
+                                oninput="checkLoginForm()">
+                        </div>
+                        <a href="#" class="forgot-password">Forgot your password?</a>
+                        <button type="submit" class="submit-btn" id="loginBtn">Login to your account</button>
+                    </form>
+
+                    <div class="signup-section">
+                        <h3>Not a customer yet?</h3>
+                        <button class="create-account-btn" onclick="showRegister()">Create an account</button>
+                    </div>
+                </div>
+
+                <!-- Form Đăng ký -->
+                <div id="registerForm" class="form-container">
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="regUsername">Username</label>
+                            <input type="text" id="regUsername" required minlength="3"
+                                placeholder="At least 3 characters" oninput="checkRegisterForm()">
+                        </div>
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" required placeholder="example@email.com"
+                                oninput="checkRegisterForm()">
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Password</label>
+                            <input type="password" id="regPassword" required minlength="6"
+                                placeholder="At least 6 characters" oninput="checkRegisterForm()">
+                        </div>
+                        <div class="form-group">
+                            <label for="regConfirmPassword">Confirm Password</label>
+                            <input type="password" id="regConfirmPassword" required placeholder="Re-enter your password"
+                                oninput="checkRegisterForm()">
+                        </div>
+                        <button type="submit" class="submit-btn" id="registerBtn">Create an account</button>
+                    </form>
+
+                    <div class="signup-section">
+                        <h3>Already have an account?</h3>
+                        <button class="create-account-btn" onclick="showLogin()">Login here</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Giỏ hàng -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content cart-modal-content" id="cartModalContent">
+            <div class="modal-header">
+                <h2>Giỏ hàng của bạn</h2>
+                <span class="close" onclick="closeCartModal()">&times;</span>
+            </div>
+            <div class="modal-body cart-modal-body">
+                <div id="cartItems">
+                    <!-- Cart items sẽ được render bằng JavaScript -->
+                </div>
+                <div id="cartEmpty" style="text-align: center; padding: 40px;">
+                    <p style="color: #999; font-size: 16px;">Giỏ hàng của bạn đang trống</p>
+                    <button class="create-account-btn" onclick="closeCartModal()" style="margin-top: 20px;">Tiếp tục mua
+                        sắm</button>
+                </div>
+                <div id="cartSummary"
+                    style="display: none; border-top: 1px solid #f0f0f0; padding-top: 20px; margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px;">
+                        <span>Tổng cộng:</span>
+                        <span id="cartTotal" style="font-weight: 600; color: #EE1C47; font-size: 20px;">$0</span>
+                    </div>
+                    <button class="create-account-btn" style="width: 100%;">Thanh toán</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận Đăng xuất -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content logout-modal-content" id="logoutModalContent">
+            <div class="modal-header">
+                <h2>Xác nhận đăng xuất</h2>
+                <span class="close" onclick="closeLogoutModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="logout-message">
+                    <i class='bx bx-log-out-circle'></i>
+                    <p id="logoutUsername"></p>
+                    <p style="color: #666; margin-top: 10px;">Bạn có chắc muốn đăng xuất?</p>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="create-account-btn" onclick="confirmLogout()"
+                        style="flex: 1; background: #EE1C47;">Đăng xuất</button>
+                    <button class="create-account-btn" onclick="closeLogoutModal()"
+                        style="flex: 1; background: #999;">Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chi tiết sản phẩm -->
+    <div id="productDetailModal" class="modal">
+        <div class="modal-content product-detail-content" id="productDetailContent">
+            <span class="close" onclick="closeProductDetail()">&times;</span>
+            <div class="product-detail-body">
+                <div class="product-detail-image">
+                    <img id="detailImage" src="" alt="">
+                </div>
+                <div class="product-detail-info">
+                    <div id="detailTag" class="product-tag"></div>
+                    <h2 id="detailName"></h2>
+                    <div class="product-rating">
+                        <div class="stars" id="detailStars"></div>
+                        <span id="detailRating"></span>
+                    </div>
+                    <div class="product-price">
+                        <p id="detailPrice"></p>
+                    </div>
+                    <div class="product-colors">
+                        <p>Available Colors: <span id="detailColors"></span></p>
+                    </div>
+                    <div class="product-description">
+                        <p>Premium quality clothing with comfortable fit and stylish design. Perfect for everyday wear
+                            or special occasions.</p>
+                    </div>
+                    <div class="product-quantity">
+                        <label>Quantity:</label>
+                        <div class="qty-selector">
+                            <button onclick="decreaseQty()">-</button>
+                            <input type="number" id="detailQty" value="1" min="1">
+                            <button onclick="increaseQty()">+</button>
+                        </div>
+                    </div>
+                    <button class="create-account-btn" id="addToCartDetailBtn" onclick="addToCartDetail()"
+                        style="width: 100%; margin-top: 20px; background: #EE1C47;">Thêm vào giỏ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="main-home">
+        <div class="main-text">
+            <h5>Winter Collection</h5>
+            <h1>New Winter <br> Collection 2025</h1>
+            <p>There's Nothing like Trend</p>
+            <a href="#trending" class="main-btn">Shop Now <i class='bx bx-right-arrow-alt'></i></a>
+        </div>
+
+        <div class="down-arrow">
+            <a href="#trending" class="down"><i class='bx bx-down-arrow-alt'></i></a>
+        </div>
+    </section>
+
+    <section class="trending-product" id="trending">
+        <div class="center-text">
+            <h2>Our Trending <span>products</span></h2>
+        </div>
+
+        <div class="products">
+            <div class="row"
+                onclick="openProductDetail({id:1, name:'Half Running Set', price:'$99 - $129', image:'image/1.jpg', tag:'Sale', rating:4.5, colors:2})">
+                <img src="image/1.jpg" alt="Half Running Set">
+                <div class="product-name">
+                    <h4>Half Running Set</h4>
+                </div>
+            </div>
+
+            <div class="row"
+                onclick="openProductDetail({id:2, name:'Formal Men Lowers', price:'$99 - $129', image:'image/2.jpg', tag:'New', rating:4.5, colors:2})">
+                <img src="image/2.jpg" alt="Formal Men Lowers">
+                <div class="product-name">
+                    <h4>Formal Men Lowers</h4>
+                </div>
+            </div>
+
+            <div class="row"
+                onclick="openProductDetail({id:3, name:'Half Running Suit', price:'$99 - $129', image:'image/3.jpg', tag:'Sale', rating:4.5, colors:2})">
+                <img src="image/3.jpg" alt="Half Running Suit">
+                <div class="product-name">
+                    <h4>Half Running Suit</h4>
+                </div>
+            </div>
+
+            <div class="row"
+                onclick="openProductDetail({id:4, name:'Half Fancy Lady Dress', price:'$99 - $129', image:'image/4.jpg', tag:'Hot', rating:4.5, colors:2})">
+                <img src="image/4.jpg" alt="Half Fancy Lady Dress">
+                <div class="product-name">
+                    <h4>Half Fancy Lady Dress</h4>
+                </div>
+            </div>
+
+            <div class="row"
+                onclick="openProductDetail({id:5, name:'Flix Flox Jeans', price:'$99 - $129', image:'image/5.jpg', tag:'', rating:4.5, colors:2})">
+                <img src="image/5.jpg" alt="Flix Flox Jeans">
+                <div class="product-name">
+                    <h4>Flix Flox Jeans</h4>
+                </div>
+            </div>
+
+            <div class="row"
+                onclick="openProductDetail({id:6, name:'Fancy Salwar Suits', price:'$99 - $129', image:'image/6.jpg', tag:'Hot', rating:4.5, colors:2})">
+                <img src="image/6.jpg" alt="Fancy Salwar Suits">
+                <div class="product-name">
+                    <h4>Fancy Salwar Suits</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:7, name:'Printed Straight Kurta', price:'$99 - $129', image:'image/7.jpg', tag:'Sale', rating:4.5, colors:2})">
+                <img src="image/7.jpg" alt="Printed Straight Kurta">
+                <div class="product-name">
+                    <h4>Printed Straight Kurta</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:8, name:'Collot Full Dress', price:'$99 - $129', image:'image/8.jpg', tag:'Sale', rating:4.5, colors:2})">
+                <img src="image/8.jpg" alt="Collot Full Dress">
+                <div class="product-name">
+                    <h4>Collot Full Dress</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:9, name:'Casual Cotton Shirt', price:'$79 - $99', image:'image/9.jpg', tag:'New', rating:4.5, colors:2})">
+                <img src="image/9.jpg" alt="Casual Cotton Shirt">
+                <div class="product-name">
+                    <h4>Casual Cotton Shirt</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:10, name:'Elegant Evening Gown', price:'$149 - $189', image:'image/10.jpg', tag:'Hot', rating:4.5, colors:2})">
+                <img src="image/10.jpg" alt="Elegant Evening Gown">
+                <div class="product-name">
+                    <h4>Elegant Evening Gown</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:11, name:'Denim Jacket', price:'$89 - $119', image:'image/11.jpg', tag:'Sale', rating:4.5, colors:2})">
+                <img src="image/11.jpg" alt="Denim Jacket">
+                <div class="product-name">
+                    <h4>Denim Jacket</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:12, name:'Summer Sundress', price:'$69 - $89', image:'image/12.jpg', tag:'New', rating:4.5, colors:2})">
+                <img src="image/12.jpg" alt="Summer Sundress">
+                <div class="product-name">
+                    <h4>Summer Sundress</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:13, name:'Classic Blazer', price:'$119 - $149', image:'image/13.jpg', tag:'Hot', rating:4.5, colors:2})">
+                <img src="image/13.jpg" alt="Classic Blazer">
+                <div class="product-name">
+                    <h4>Classic Blazer</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:14, name:'Vintage Sweater', price:'$79 - $109', image:'image/14.jpg', tag:'Sale', rating:4.5, colors:2})">
+                <img src="image/14.jpg" alt="Vintage Sweater">
+                <div class="product-name">
+                    <h4>Vintage Sweater</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:15, name:'Athletic Leggings', price:'$59 - $79', image:'image/15.jpg', tag:'New', rating:4.5, colors:2})">
+                <img src="image/15.jpg" alt="Athletic Leggings">
+                <div class="product-name">
+                    <h4>Athletic Leggings</h4>
+                </div>
+            </div>
+            <div class="row"
+                onclick="openProductDetail({id:16, name:'Wool Overcoat', price:'$179 - $219', image:'image/16.jpg', tag:'Hot', rating:4.5, colors:2})">
+                <img src="image/16.jpg" alt="Wool Overcoat">
+                <div class="product-name">
+                    <h4>Wool Overcoat</h4>
+                </div>
+            </div>
+
+    </section>
+    <!-- Product Listing Section -->
+    <section class="product-listing" id="productListing" style="display: none;">
+        <div class="center-text">
+            <h2>Our <span id="categoryTitle">Products</span></h2>
+        </div>
+
+        <div class="products" id="productGrid">
+            <!-- Products sẽ được load động bằng JavaScript -->
+        </div>
+    </section>
+
+    <section class="clients-reviews" id="reviews">
+        <div class="reviews">
+            <h3>clients reviews</h3>
+            <img src="image/team-1.jpg" alt="">
+            <p>Sản phẩm tốt lắm em!</p>
+            <h2>Trương Minh Tâm</h2>
+            <p>Sinh viên Bách Khoa</p>
+
+        </div>
+    </section>
+
+    <section class="update-news" id="feedback">
+        <div class="up-center-text">
+            <h2>New Updates</h2>
+        </div>
+
+        <div class="update-cart">
+            <div class="cart">
+                <img src="image/bl-1.png" alt="">
+                <h5>20 Nov 2025</h5>
+                <h4>Let's Start bring sale on this summer vaction</h4>
+                <p>The product has a clean and modern design that is easy to match with different outfits. The material
+                    appears comfortable and suitable for everyday wear. The stitching looks neat, giving the item a good
+                    level of durability. Overall, this piece offers a nice balance between style and practicality,
+                    making it a solid choice for casual and daily use.</p>
+
+                <h6>Continue Reading...</h6>
+            </div>
+            <div class="cart">
+                <img src="image/bl-2.png" alt="">
+                <h5>20 Nov 2025</h5>
+                <h4>Let's Start bring sale on this summer vaction</h4>
+                <p>The product has a clean and modern design that is easy to match with different outfits. The material
+                    appears comfortable and suitable for everyday wear. The stitching looks neat, giving the item a good
+                    level of durability. Overall, this piece offers a nice balance between style and practicality,
+                    making it a solid choice for casual and daily use.</p>
+
+                <h6>Continue Reading...</h6>
+            </div>
+            <div class="cart">
+                <img src="image/bl-3.png" alt="">
+                <h5>20 Nov 2025</h5>
+                <h4>Let's Start bring sale on this summer vaction</h4>
+                <p>The product has a clean and modern design that is easy to match with different outfits. The material
+                    appears comfortable and suitable for everyday wear. The stitching looks neat, giving the item a good
+                    level of durability. Overall, this piece offers a nice balance between style and practicality,
+                    making it a solid choice for casual and daily use.</p>
+
+                <h6>Continue Reading...</h6>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <div class="contact-info">
+            <div class="first-info">
+                <img src="image/logo.png" alt="">
+                <p> 139 Tam Trinh , <br>Thanh pho Ha Noi</p>
+                <p>0342067955</p>
+                <p>tamkudo123@gmail.com</p>
+                <div class="social-icon">
+                    <a href="https://www.facebook.com/truongminhtam2309/" target="_blank" rel="noopener noreferrer"><i
+                            class='bx bxl-facebook'></i></a>
+                    <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer"><i
+                            class='bx bxl-twitter'></i></a>
+                    <a href="https://www.instagram.com/just.wepotmt/" target="_blank" rel="noopener noreferrer"><i
+                            class='bx bxl-instagram'></i></a>
+                    <a href="https://www.youtube.com/@truongminhtam4088" target="_blank" rel="noopener noreferrer"><i
+                            class='bx bxl-youtube'></i></a>
+                    <a href="https://www.tiktok.com/@greyrat.293" target="_blank" rel="noopener noreferrer"><i
+                            class='bx bxl-tiktok'></i></a>
+                </div>
+            </div>
+
+            <div class="second-info">
+                <h4>Support</h4>
+                <p>Contact us</p>
+                <p>About us</p>
+                <p>Shopping </p>
+                <p>Privacy</p>
+            </div>
+
+            <div class="third-info">
+                <h4>Shop</h4>
+                <p>Men's Shopping</p>
+                <p>Women's Shopping</p>
+                <p>Kids's Shopping</p>
+                <p>Furniture</p>
+                <p>Discount</p>
+            </div>
+
+            <div class="fourth-info">
+                <h4>Company</h4>
+                <p>About</p>
+                <p>Blog</p>
+                <p>Afillate</p>
+                <p>Login</p>
+            </div>
+
+            <div class="five">
+                <h4>Subcribe</h4>
+                <p>Receive Updates, Hot Deals, Discounts Sent Straight In Your Inbox Daily</p>
+                <p>ABCDEFGHIK</p>
+
+            </div>
+        </div>
+    </section>
+
+    <div class="end-text">
+        <p>Copyright @2025. All Rights Reserved. Design by Truong Minh Tam.</p>
+    </div>
+
+    <script src="java.js"></script>
+</body>
+
+</html>
