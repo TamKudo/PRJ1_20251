@@ -486,8 +486,22 @@ header.sticky {
         right: 0;
     }
 
-}
+    .dropdown-content {
+        position: static;
+        display: none;
+        box-shadow: none;
+        background: #f8f8f8;
+        margin-top: 10px;
+    }
 
+    .dropdown.active .dropdown-content {
+        display: block;
+    }
+
+    .dropdown-content a {
+        padding-left: 40px;
+    }
+}
 
 .modal {
     display: none;
@@ -595,11 +609,6 @@ header.sticky {
 
 .form-container.active {
     display: block;
-}
-
-.form-tabs {
-    display: none;
-    /* Ẩn tabs vì giờ có 2 modal riêng */
 }
 
 .form-group {
@@ -867,25 +876,6 @@ header.sticky {
     font-size: 12px;
     color: #666;
     margin-right: 5px;
-}
-
-/* Responsive Dropdown */
-@media(max-width: 750px) {
-    .dropdown-content {
-        position: static;
-        display: none;
-        box-shadow: none;
-        background: #f8f8f8;
-        margin-top: 10px;
-    }
-
-    .dropdown.active .dropdown-content {
-        display: block;
-    }
-
-    .dropdown-content a {
-        padding-left: 40px;
-    }
 }
 
 /* ========== CART MODAL STYLES ========== */
@@ -1326,98 +1316,22 @@ header.sticky {
     }
 }
 
-#cartEmpty {
-    text-align: center;
-    padding: 40px;
-    display: none;
-    /* Mặc định ẩn, JS sẽ hiện */
-}
-
-#cartEmpty p {
-    color: #999;
-    font-size: 16px;
-}
-
-#cartEmpty button {
-    margin-top: 20px;
-}
-
-#cartSummary {
-    display: none;
-    /* Mặc định ẩn */
-    border-top: 1px solid #f0f0f0;
-    padding-top: 20px;
-    margin-top: 20px;
-}
-
-#cartSummaryRow {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 16px;
-}
-
-#cartTotal {
-    font-weight: 600;
-    color: #EE1C47;
-    font-size: 20px;
-}
-
-#checkoutBtn {
-    width: 100%;
-}
-
-/* 2. Style cho nút Thêm vào giỏ (Detail Modal) */
 #addToCartDetailBtn {
     width: 100%;
     margin-top: 20px;
     background-color: #EE1C47;
 }
 
-/* 3. Style cho nút Đăng xuất (Logout Modal) */
+/* Modal Đăng xuất: Căn chỉnh 2 nút nằm ngang */
 .logout-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-#confirmLogoutBtn {
-    flex: 1;
-    background-color: #EE1C47;
-}
-
-#cancelLogoutBtn {
-    flex: 1;
-    background-color: #999;
-}
-
-/* 4. Style cho phần danh sách tìm kiếm */
-#productListing {
-    display: none;
-    /* JS sẽ bật lên */
-}
-
-#noProductFound {
-    padding: 24px;
-    width: 100%;
-    text-align: center;
-}
-
-
-/* 1. Modal Đăng xuất: Căn chỉnh 2 nút nằm ngang */
-.logout-actions {
-    display: flex;
-    /* Xếp hàng ngang */
     gap: 15px;
-    /* Khoảng cách giữa 2 nút */
     margin-top: 25px;
     width: 100%;
 }
 
-/* 2. Nút "Đăng xuất" (Xác nhận) - Màu Đỏ */
 #confirmLogoutBtn {
     flex: 1;
-    /* Chiếm 50% chiều rộng */
     background-color: #EE1C47;
     color: white;
     border: none;
@@ -1428,7 +1342,6 @@ header.sticky {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(238, 28, 71, 0.2);
-    /* Đổ bóng nhẹ */
 }
 
 #confirmLogoutBtn:hover {
@@ -1437,10 +1350,8 @@ header.sticky {
     box-shadow: 0 6px 15px rgba(238, 28, 71, 0.3);
 }
 
-/* 3. Nút "Hủy" - Màu Xám */
 #cancelLogoutBtn {
     flex: 1;
-    /* Chiếm 50% chiều rộng */
     background-color: #f5f5f5;
     color: #555;
     border: 1px solid #ddd;
@@ -1450,7 +1361,6 @@ header.sticky {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: none;
 }
 
 #cancelLogoutBtn:hover {
@@ -1460,26 +1370,21 @@ header.sticky {
     transform: translateY(-2px);
 }
 
-/* 4. Tinh chỉnh lại nút Login/Register cho đẹp hơn */
 .submit-btn,
 .create-account-btn {
     padding: 14px;
     border-radius: 8px;
-    /* Bo góc mềm mại hơn */
     font-size: 16px;
     letter-spacing: 0.5px;
     text-transform: none;
-    /* Bỏ viết hoa toàn bộ cho dễ đọc */
 }
 
-/* Trạng thái nút Login khi chưa nhập đủ thông tin */
 .submit-btn {
     background-color: #f0f0f0;
     color: #a0a0a0;
     cursor: not-allowed;
 }
 
-/* Trạng thái nút Login khi đã nhập đủ (class active được JS thêm vào) */
 .submit-btn.active {
     background-color: #000;
     color: #fff;
