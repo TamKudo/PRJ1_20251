@@ -20,7 +20,7 @@
 
 <body>
     <header>
-        <a href="#" class="logo"><img src="image/logo.png" alt=""></a>
+        <a href="#" class="logo" aria-label="Trang chủ"><img src="image/logo.png" alt="Mini web clothing logo"></a>
 
         <ul class="navmenu">
             <li><a href="#">Home</a></li>
@@ -39,14 +39,14 @@
         </ul>
 
         <div class="nav-icon">
-            <a href="#" id="searchIcon"><i class='bx bx-search'></i></a>
+            <a href="#" id="searchIcon" aria-label="Search"><i class='bx bx-search'></i></a>
             <input type="text" id="searchInput" placeholder="Tìm sản phẩm..."
                 onkeydown="if(event.key==='Enter'){searchProducts();}">
-            <a href="#" id="userIcon"><i class="bx bx-user"></i></a>
-            <a href="#" id="cartIcon"><i class='bx bx-cart'></i></a>
-            <div class="bx bx-menu" id="menu-icon"></div>
-        </div>
 
+            <a href="#" id="userIcon" aria-label="User Account"><i class="bx bx-user"></i></a>
+            <a href="#" id="cartIcon" aria-label="Shopping Cart"><i class='bx bx-cart'></i></a>
+            <div class="bx bx-menu" id="menu-icon" aria-label="Menu"></div>
+        </div>
     </header>
     <!-- Modal Đăng nhập/Đăng ký -->
     <div id="authModal" class="modal">
@@ -134,18 +134,18 @@
                 <div id="cartItems">
                     <!-- Cart items sẽ được render bằng JavaScript -->
                 </div>
-                <div id="cartEmpty" style="text-align: center; padding: 40px;">
-                    <p style="color: #999; font-size: 16px;">Giỏ hàng của bạn đang trống</p>
-                    <button class="create-account-btn" onclick="closeCartModal()" style="margin-top: 20px;">Tiếp tục mua
+                <div id="cartEmpty">
+                    <p>Giỏ hàng của bạn đang trống</p>
+                    <button type="button" class="create-account-btn" onclick="closeCartModal()">Tiếp tục mua
                         sắm</button>
                 </div>
-                <div id="cartSummary"
-                    style="display: none; border-top: 1px solid #f0f0f0; padding-top: 20px; margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px;">
+
+                <div id="cartSummary">
+                    <div id="cartSummaryRow">
                         <span>Tổng cộng:</span>
-                        <span id="cartTotal" style="font-weight: 600; color: #EE1C47; font-size: 20px;">$0</span>
+                        <span id="cartTotal">$0</span>
                     </div>
-                    <button class="create-account-btn" style="width: 100%;">Thanh toán</button>
+                    <button type="button" class="create-account-btn" id="checkoutBtn">Thanh toán</button>
                 </div>
             </div>
         </div>
@@ -154,22 +154,18 @@
     <!-- Modal Xác nhận Đăng xuất -->
     <div id="logoutModal" class="modal">
         <div class="modal-content logout-modal-content" id="logoutModalContent">
-            <div class="modal-header">
-                <h2>Xác nhận đăng xuất</h2>
-                <span class="close" onclick="closeLogoutModal()">&times;</span>
+
+            <span class="close" onclick="closeLogoutModal()">&times;</span>
+
+            <div class="logout-message">
+                <i class='bx bx-log-out-circle'></i>
+                <p id="logoutUsername"></p>
+                <p class="logout-confirm-text">Bạn có chắc muốn đăng xuất?</p>
             </div>
-            <div class="modal-body">
-                <div class="logout-message">
-                    <i class='bx bx-log-out-circle'></i>
-                    <p id="logoutUsername"></p>
-                    <p style="color: #666; margin-top: 10px;">Bạn có chắc muốn đăng xuất?</p>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="create-account-btn" onclick="confirmLogout()"
-                        style="flex: 1; background: #EE1C47;">Đăng xuất</button>
-                    <button class="create-account-btn" onclick="closeLogoutModal()"
-                        style="flex: 1; background: #999;">Hủy</button>
-                </div>
+
+            <div class="logout-actions">
+                <button type="button" id="confirmLogoutBtn" onclick="confirmLogout()">Đăng xuất</button>
+                <button type="button" id="cancelLogoutBtn" onclick="closeLogoutModal()">Hủy</button>
             </div>
         </div>
     </div>
@@ -200,15 +196,16 @@
                             or special occasions.</p>
                     </div>
                     <div class="product-quantity">
-                        <label>Quantity:</label>
+                        <label for="detailQty">Quantity:</label>
                         <div class="qty-selector">
-                            <button onclick="decreaseQty()">-</button>
+                            <button type="button" onclick="decreaseQty()">-</button>
                             <input type="number" id="detailQty" value="1" min="1">
-                            <button onclick="increaseQty()">+</button>
+                            <button type="button" onclick="increaseQty()">+</button>
                         </div>
                     </div>
-                    <button class="create-account-btn" id="addToCartDetailBtn" onclick="addToCartDetail()"
-                        style="width: 100%; margin-top: 20px; background: #EE1C47;">Thêm vào giỏ</button>
+
+                    <button type="button" class="create-account-btn" id="addToCartDetailBtn"
+                        onclick="addToCartDetail()">Thêm vào giỏ</button>
                 </div>
             </div>
         </div>
@@ -223,7 +220,7 @@
         </div>
 
         <div class="down-arrow">
-            <a href="#trending" class="down"><i class='bx bx-down-arrow-alt'></i></a>
+            <a href="#trending" class="down" aria-label="Cuộn xuống"><i class='bx bx-down-arrow-alt'></i></a>
         </div>
     </section>
 
@@ -236,13 +233,11 @@
         </div>
     </section>
     <!-- Product Listing Section -->
-    <section class="product-listing" id="productListing" style="display: none;">
+    <section class="product-listing" id="productListing">
         <div class="center-text">
             <h2>Our <span id="categoryTitle">Products</span></h2>
         </div>
-
         <div class="products" id="productGrid">
-            <!-- Products sẽ được load động bằng JavaScript -->
         </div>
     </section>
 
@@ -308,16 +303,20 @@
                 <p>0342067955</p>
                 <p>tamkudo123@gmail.com</p>
                 <div class="social-icon">
-                    <a href="https://www.facebook.com/truongminhtam2309/" target="_blank" rel="noopener noreferrer"><i
-                            class='bx bxl-facebook'></i></a>
-                    <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer"><i
+                    <a href="https://www.facebook.com/truongminhtam2309/" target="_blank" rel="noopener noreferrer"
+                        aria-label="Facebook"><i class='bx bxl-facebook'></i></a>
+
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i
                             class='bx bxl-twitter'></i></a>
-                    <a href="https://www.instagram.com/just.wepotmt/" target="_blank" rel="noopener noreferrer"><i
-                            class='bx bxl-instagram'></i></a>
-                    <a href="https://www.youtube.com/@truongminhtam4088" target="_blank" rel="noopener noreferrer"><i
-                            class='bx bxl-youtube'></i></a>
-                    <a href="https://www.tiktok.com/@greyrat.293" target="_blank" rel="noopener noreferrer"><i
-                            class='bx bxl-tiktok'></i></a>
+
+                    <a href="https://www.instagram.com/just.wepotmt/" target="_blank" rel="noopener noreferrer"
+                        aria-label="Instagram"><i class='bx bxl-instagram'></i></a>
+
+                    <a href="https://www.youtube.com/@truongminhtam4088" target="_blank" rel="noopener noreferrer"
+                        aria-label="Youtube"><i class='bx bxl-youtube'></i></a>
+
+                    <a href="https://www.tiktok.com/@greyrat.293" target="_blank" rel="noopener noreferrer"
+                        aria-label="Tiktok"><i class='bx bxl-tiktok'></i></a>
                 </div>
             </div>
 
